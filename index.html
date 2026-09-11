@@ -11,6 +11,10 @@
   <meta property="og:description" content="Check what the internet is telling your customers about your business. Free, takes about five minutes.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://rj-labs.com/">
+  <meta property="og:image" content="https://rj-labs.com/assets/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <script>document.documentElement.className += " js";</script>
@@ -27,7 +31,7 @@
       <nav aria-label="Main">
         <ul class="nav">
           <li class="nav-hide-sm"><a href="#check">Check your business</a></li>
-          <li class="nav-hide-sm"><a href="#prices">Prices</a></li>
+          <li><a href="#prices">Prices</a></li>
           <li class="nav-hide-sm"><a href="#how-we-work">How we work</a></li>
           <li><a class="nav-cta" href="#contact">Contact</a></li>
         </ul>
@@ -47,10 +51,11 @@
           <a class="btn btn-quiet btn-lg" href="#prices">See prices</a>
         </div>
         <p class="hero-note">Takes about five minutes. You look with your own eyes. Nothing is sent to us unless you choose to send it.</p>
+        <p class="hero-owner">RJ Labs is run by <strong>Rowan Brandenberg</strong>, here in Flagstaff.</p>
         <ul class="promise-strip" aria-label="Our promises">
           <li>Everything stays in your name</li>
           <li>We never ask for your passwords</li>
-          <li>Free to look, no obligation</li>
+          <li>Checking is free, no obligation</li>
         </ul>
       </div>
     </section>
@@ -136,7 +141,7 @@
             <li>Whether Google shows your business</li>
             <li>Your address and phone number on Google Maps</li>
             <li>Your hours on Google Maps</li>
-            <li>Where your Website button really goes</li>
+            <li>Where your Website button takes people</li>
             <li>Apple Maps, which iPhones use</li>
             <li>Whether anyone replies to your reviews</li>
           </ol>
@@ -148,21 +153,12 @@
         <div class="lead-alt">
           <div>
             <h3>Rather we just check it for you?</h3>
-            <p>Send us your business name and town. Rowan will look and email you back with what he finds. Free, and no obligation.</p>
+            <p>Email us your business name and town. Rowan will look and write back with what he finds. Free, and no obligation.</p>
           </div>
-          <form class="lead-form" id="lead-form" novalidate>
-            <div class="field">
-              <label for="lead-name">Business name</label>
-              <input id="lead-name" type="text" autocomplete="organization" required>
-            </div>
-            <div class="field">
-              <label for="lead-town">Town</label>
-              <input id="lead-town" type="text" autocomplete="address-level2" required>
-            </div>
-            <p class="field-error" id="lead-error" role="alert" hidden>Please add your business name and town.</p>
-            <button class="btn btn-primary btn-block" type="submit">Email this to RJ Labs</button>
-            <p class="fine">This opens an email from your own email address. Or write to <a href="mailto:rowan@rj-labs.com">rowan@rj-labs.com</a> directly.</p>
-          </form>
+          <div class="lead-actions">
+            <a class="btn btn-secondary btn-block" id="lead-mail" href="mailto:rowan@rj-labs.com?subject=Please%20check%20my%20business&amp;body=Hi%20Rowan%2C%0D%0A%0D%0ACould%20you%20check%20my%20business%20for%20me%3F%0D%0A%0D%0ABusiness%20name%3A%20%0D%0ATown%3A%20%0D%0AMy%20name%3A%20%0D%0ABest%20phone%20number%20(optional)%3A%20">Email us your business name</a>
+            <p class="fine">Or write to <a href="mailto:rowan@rj-labs.com">rowan@rj-labs.com</a> from any email.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -172,8 +168,8 @@
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">Why this matters</p>
-          <h2 id="why-title">People look you up before they walk in. If what they find is wrong, they go somewhere else.</h2>
-          <p class="section-sub">And you never hear about it. There is no phone call, no complaint. Just a customer who ate, shopped, or hired somewhere else.</p>
+          <h2 id="why-title">People look you up before they walk in. If what they find is wrong, some of them go somewhere else.</h2>
+          <p class="section-sub">And you would not hear about it. A customer who picks another place does not call to tell you why.</p>
         </div>
         <div class="cards cards-3">
           <article class="card reveal">
@@ -194,7 +190,7 @@
           <blockquote>
             <p>A local restaurant's Google listing had a Website button that sent customers to a gambling site instead of the restaurant's own page.</p>
           </blockquote>
-          <figcaption>We are not naming the restaurant. The website check in the tool above is the one that catches this.</figcaption>
+          <figcaption>We keep other businesses' names private. The Website button step in the free check above is how you would catch this on your own listing.</figcaption>
         </figure>
       </div>
     </section>
@@ -204,8 +200,8 @@
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">Our work</p>
-          <h2 id="work-title">Real work you can click on.</h2>
-          <p class="section-sub">These are actual screenshots, not mockups. Click through and look around.</p>
+          <h2 id="work-title">Work you can click on.</h2>
+          <p class="section-sub">Real screenshots of live sites, not mockups. One is a local business we built for. One is our own app.</p>
         </div>
         <div class="work-grid">
           <article class="work reveal">
@@ -243,7 +239,8 @@
           <article class="price reveal">
             <h3>Fixing your Google and Apple Maps listings</h3>
             <p class="amount">Free</p>
-            <p>We make sure your hours, phone number, address, and website link are right on both, and that you are the one in control of them.</p>
+            <p>We get your hours, phone number, address, and website link right on both, and make sure you are the one in control of them.</p>
+            <p class="note"><strong>Why free?</strong> It is the easiest way for you to see how we work, with nothing to lose. If you want a website later, we are here. If not, you keep the fixes.</p>
           </article>
           <article class="price reveal">
             <h3>A one page website</h3>
@@ -254,8 +251,8 @@
             <h3>A full website, kept up to date</h3>
             <p class="amount">$1,200 <span class="amount-plus">plus $50 a month</span></p>
             <p>A complete site with several pages, for example your services, photos, and how to reach you.</p>
-            <p><strong>What the $50 a month is for:</strong> changes whenever you need them, keeping your Google and Apple Maps listings correct, and a real person to talk to.</p>
-            <p class="note">It is not a hosting fee. Keeping a site like this online is free, and you are welcome to look that up. We do not charge you for it.</p>
+            <p><strong>What the $50 a month is for:</strong> changes to your website whenever you need them, watching your Google and Apple Maps listings and fixing anything that changes later, and a real person to talk to.</p>
+            <p class="note">The $50 is not a charge for keeping your website online. The way we build sites, that part is free, so we do not charge you for it.</p>
           </article>
         </div>
         <article class="price price-wide reveal">
@@ -265,7 +262,7 @@
           </div>
           <a class="btn btn-secondary" href="#contact">Ask us for a price</a>
         </article>
-        <p class="fine price-fine">Your web address is a small yearly fee that you pay directly, in your own name. We never buy it for you or hold it for you.</p>
+        <p class="fine price-fine">Your web address (like yourbusiness.com) is a yearly fee, usually around $10 to $20, that you pay directly to the company you got it from, in your own name. We never buy it for you or hold it for you.</p>
       </div>
     </section>
 
@@ -274,29 +271,29 @@
       <div class="wrap">
         <div class="section-head">
           <p class="eyebrow">How we work</p>
-          <h2 id="trust-title">If someone calls saying your website has a problem, you should be suspicious. Here is how we are different.</h2>
+          <h2 id="trust-title">If someone calls saying your website has a problem, be careful. Here is how we work instead.</h2>
         </div>
         <ol class="trust-list">
           <li class="trust reveal">
             <h3>Everything stays in your name.</h3>
-            <p>Your web address, your Google and Apple listings, your accounts, your card. RJ Labs never owns your domain. If you stop working with us, you keep all of it.</p>
+            <p>Your web address, your Google listing, your Apple Maps listing, your accounts, and your card are all in your name. RJ Labs never owns your web address. If you stop working with us, you keep all of it.</p>
           </li>
           <li class="trust reveal">
             <h3>We never ask for your passwords.</h3>
-            <p>Google and Apple both let you add a helper to your listing from your own account, and remove them whenever you want. That is how we get access. If anyone asks you for a password, say no.</p>
+            <p>Google and Apple both let you give someone access to your listing from your own account. Google calls this adding a manager. You can take that access away whenever you want. That is how we get in. If anyone asks you for a password, say no.</p>
           </li>
           <li class="trust reveal">
             <h3>We are local, in Flagstaff. We will meet you in person.</h3>
             <p>At your shop, over coffee, wherever is easy. You will know exactly who you are dealing with.</p>
           </li>
           <li class="trust reveal">
-            <h3>Free to look. No obligation.</h3>
+            <h3>Checking your listings is free. No obligation.</h3>
             <p>We will tell you what we find. If everything looks fine, we will say so and that is the end of it.</p>
           </li>
         </ol>
         <div class="honest reveal">
           <h3>What we do not do</h3>
-          <p>We build websites and fix listings. We are not a computer security company. If you think someone has broken into your website itself, talk to a security service such as <a class="text-link" href="https://sucuri.net/" target="_blank" rel="noopener">Sucuri</a> or <a class="text-link" href="https://www.wordfence.com/" target="_blank" rel="noopener">Wordfence</a> first. We will tell you that straight rather than guess.</p>
+          <p>We build websites and fix listings. We are not a computer security company. If you think someone has broken into your website itself, you need a website security specialist, and we will tell you that up front rather than guess. Two well known ones are <a class="text-link" href="https://sucuri.net/" target="_blank" rel="noopener">Sucuri</a> and <a class="text-link" href="https://www.wordfence.com/" target="_blank" rel="noopener">Wordfence</a>.</p>
         </div>
       </div>
     </section>
@@ -307,7 +304,8 @@
         <div>
           <p class="eyebrow">Contact</p>
           <h2 id="contact-title">Tell us what you need. Email is easiest.</h2>
-          <p class="section-sub">Write a few lines about your business and what is bothering you. You will hear back from Rowan, a real person here in Flagstaff.</p>
+          <p class="owner-intro">Hi, I am <strong>Rowan Brandenberg</strong>. I run RJ Labs here in Flagstaff, and I am the person who reads your email and meets with you.</p>
+          <p class="section-sub">Write a few lines about your business and what is bothering you, and I will write back.</p>
           <a class="btn btn-primary btn-lg contact-mail" href="mailto:rowan@rj-labs.com?subject=Question%20for%20RJ%20Labs">Email rowan@rj-labs.com</a>
           <p class="contact-call"><strong>Prefer a phone call?</strong> Put your number and a good time in your email, and Rowan will call you.</p>
         </div>

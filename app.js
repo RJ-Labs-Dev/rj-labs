@@ -26,7 +26,7 @@
         { label: 'Yes, I see it', kind: 'ok' },
         { label: 'No, I do not see it', kind: 'problem',
           title: 'Google does not show your business properly',
-          text: 'People who search your name do not see your hours or phone number, so some of them call someone else instead.' },
+          text: 'People who search your name may not see your hours or phone number, so some may call someone else instead.' },
         { label: 'I am not sure', kind: 'unsure',
           title: 'You were not sure what Google shows',
           text: 'Look for one box with your business name, stars, hours, and a Call button together.' }
@@ -65,10 +65,10 @@
         { label: 'Yes, the hours are right', kind: 'ok' },
         { label: 'No, they are wrong', kind: 'problem',
           title: 'Google is showing the wrong hours',
-          text: 'Somebody looks you up at 6pm, sees you as closed, and goes somewhere else. Or they drive over when you are actually closed.' },
+          text: 'Somebody looks you up at 6pm, sees you as closed, and may go somewhere else. Or they drive over when you are actually closed.' },
         { label: 'There are no hours listed', kind: 'problem',
           title: 'Google does not show your hours',
-          text: 'People cannot tell if you are open, so they pick a place where they can tell.' },
+          text: 'People cannot tell if you are open, so some will pick a place where they can tell.' },
         { label: 'I am not sure', kind: 'unsure',
           title: 'You were not sure about the hours Google shows',
           text: 'Compare the hours on Google Maps to the hours on your door.' }
@@ -77,8 +77,8 @@
     {
       id: 'website',
       title: 'Tap your Website button',
-      lead: 'On your Google listing, tap or click the button that says Website.',
-      open: 'Open Google search again',
+      lead: 'On the Google page that opens, find the box for your business, then tap or click the button that says Website.',
+      open: 'Open Google search',
       url: googleSearch,
       tip: 'This is the check most people never do.',
       ask: 'Does it take you to your own website?',
@@ -86,7 +86,7 @@
         { label: 'Yes, it is my website', kind: 'ok' },
         { label: 'No, it goes somewhere else', kind: 'problem',
           title: 'Your Website button sends people somewhere that is not yours',
-          text: 'Customers who tap it land on a page that has nothing to do with you. This one is worth fixing today. It can happen when an old web address runs out and someone else buys it.' },
+          text: 'Customers who tap it land on a page that has nothing to do with you. This one is worth fixing soon. It can happen when an old web address runs out and someone else buys it.' },
         { label: 'There is no Website button', kind: 'unsure',
           title: 'Your Google listing has no Website button',
           text: 'If you have a website, customers cannot get to it from Google. If you do not have one, this is fine.' },
@@ -269,8 +269,8 @@
     q('copy-status').textContent = '';
 
     if (n > 0) {
-      title.textContent = (WORDS[n] || n) + (n === 1 ? ' thing is' : ' things are') + ' costing you customers right now.';
-      q('result-lead').textContent = 'Here is what you found for ' + state.name + ', in plain terms.';
+      title.textContent = 'You found ' + (WORDS[n] || n).toLowerCase() + (n === 1 ? ' thing' : ' things') + ' worth fixing.';
+      q('result-lead').textContent = 'Here is what each one can mean for customers looking up ' + state.name + '.';
     } else if (u > 0) {
       title.textContent = 'Nothing you checked looks wrong.';
       q('result-lead').textContent = 'There ' + (u === 1 ? 'is one thing' : 'are a few things') + ' you were not sure about. You can check ' + (u === 1 ? 'it' : 'them') + ' yourself using the tips below.';
