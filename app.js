@@ -3,6 +3,33 @@
   'use strict';
 
   var EMAIL = 'rowan@rj-labs.com';
+  var PHONE = '(928) 863-8198';
+  // Messages post to RJ Labs' own Google Form, so nothing depends on the visitor having an email app.
+  var FORM_POST = 'https://docs.google.com/forms/d/e/1FAIpQLSfpcxdRJSl2qsStFCW76eo3QYnYRosberZ2S7PVgVCC95Lozw/formResponse';
+  var FIELD = {
+    name: 'entry.1931311903',
+    business: 'entry.1947405332',
+    phone: 'entry.441750110',
+    email: 'entry.1930709784',
+    message: 'entry.1753243788'
+  };
+
+  function sendToRJLabs(data) {
+    var body = new FormData();
+    body.append(FIELD.name, data.name || '');
+    body.append(FIELD.business, data.business || '');
+    body.append(FIELD.phone, data.phone || '');
+    body.append(FIELD.email, data.email || '');
+    body.append(FIELD.message, data.message || '');
+    return fetch(FORM_POST, { method: 'POST', mode: 'no-cors', body: body });
+  }
+
+  function sending(el, on) {
+    if (!el) return;
+    el.disabled = on;
+    el.dataset.label = el.dataset.label || el.textContent;
+    el.textContent = on ? 'Sending...' : el.dataset.label;
+  }
   var STORE_KEY = 'rjlabs-check-v1';
 
   function q(id) { return document.getElementById(id); }
@@ -265,8 +292,9 @@
     var n = found.problems.length, u = found.unsure.length;
     var title = q('result-title');
     title.classList.remove('is-clean');
-    q('result-copy').hidden = false;
-    q('copy-status').textContent = '';
+    var rf = q('result-form'), rs = q('result-status');
+    if (rf) rf.hidden = false;
+    if (rs) { rs.textContent = ''; rs.className = 'send-status'; }
 
     if (n > 0) {
       title.textContent = 'You found ' + (WORDS[n] || n).toLowerCase() + (n === 1 ? ' thing' : ' things') + ' worth fixing.';
@@ -292,29 +320,8 @@
       cta.querySelector('.result-cta-title').textContent = n > 0
         ? 'Want us to fix these for you? Free to look.'
         : 'Want us to look at these for you instead? Free, no obligation.';
-      var parts = emailParts(found);
-      q('result-mail').href = 'mailto:' + EMAIL + '?subject=' + enc(parts.subject) + '&body=' + enc(parts.body);
     }
     q('progress-bar').style.width = '100%';
-  }
-
-  function copyText(text, statusEl) {
-    function done(ok) {
-      statusEl.textContent = ok
-        ? 'Copied. Paste it into a new email to ' + EMAIL + '.'
-        : 'Could not copy automatically. Please email ' + EMAIL + ' and tell us your business name.';
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
-    } else {
-      try {
-        var ta = document.createElement('textarea');
-        ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'absolute'; ta.style.left = '-9999px';
-        document.body.appendChild(ta); ta.select();
-        var ok = document.execCommand('copy');
-        document.body.removeChild(ta); done(ok);
-      } catch (e) { done(false); }
-    }
   }
 
   function init() {
@@ -344,9 +351,27 @@
       state = { screen: 'start', name: '', town: '', step: 0, answers: [] };
       show('start', true);
     });
-    q('result-copy').addEventListener('click', function () {
+    var rForm = q('result-form');
+    if (rForm) rForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (q('r-hp').value) return;
+      var name = q('r-name').value.trim(), phone = q('r-phone').value.trim(), email = q('r-email').value.trim();
+      if (!name || !phone) { q('result-error').hidden = false; (name ? q('r-phone') : q('r-name')).focus(); return; }
+      q('result-error').hidden = true;
+      var btn = rForm.querySelector('button[type=submit]');
+      sending(btn, true);
       var p = emailParts(collect());
-      copyText('To: ' + EMAIL + '\r\nSubject: ' + p.subject + '\r\n\r\n' + p.body, q('copy-status'));
+      sendToRJLabs({ name: name, business: state.name, phone: phone, email: email, message: p.body })
+        .then(function () {
+          rForm.hidden = true;
+          q('result-status').className = 'send-status is-good';
+          q('result-status').textContent = 'Sent. Rowan has what you found and will get back to you. If you want it sorted today, call or text ' + PHONE + '.';
+        })
+        .catch(function () {
+          sending(btn, false);
+          q('result-status').className = 'send-status is-bad';
+          q('result-status').textContent = 'That did not go through. Please call or text ' + PHONE + ', or email ' + EMAIL + '.';
+        });
     });
 
     var screen = (state.screen === 'question' || state.screen === 'result') && state.name ? state.screen : 'start';
@@ -354,25 +379,42 @@
     show(screen, false);
   }
 
-  function mailForms() {
-    var lead = q('lead-form');
-    if (lead) lead.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var name = q('lead-name').value.trim(), town = q('lead-town').value.trim();
-      if (!name || !town) { q('lead-error').hidden = false; return; }
-      q('lead-error').hidden = true;
-      var body = ['Hi Rowan,', '', 'Could you check my business for me?', '', 'Business: ' + name, 'Town: ' + town, '', 'My name:', 'Best phone number (optional):'].join('\r\n');
-      window.location.href = 'mailto:' + EMAIL + '?subject=' + enc('Please check my business: ' + name) + '&body=' + enc(body);
-    });
-
+  function contactForms() {
     var contact = q('contact-form');
     if (contact) contact.addEventListener('submit', function (e) {
       e.preventDefault();
-      var n = q('c-name').value.trim(), b = q('c-biz').value.trim(), m = q('c-msg').value.trim();
-      if (!n || !m) { q('contact-error').hidden = false; return; }
+      if (q('c-hp').value) return;
+      var name = q('c-name').value.trim(), biz = q('c-biz').value.trim(),
+          phone = q('c-phone').value.trim(), email = q('c-email').value.trim(), msg = q('c-msg').value.trim();
+      if (!name || !phone || !msg) {
+        q('contact-error').hidden = false;
+        (!name ? q('c-name') : (!phone ? q('c-phone') : q('c-msg'))).focus();
+        return;
+      }
       q('contact-error').hidden = true;
-      var body = ['Hi Rowan,', '', m, '', 'Name: ' + n].concat(b ? ['Business: ' + b] : []).join('\r\n');
-      window.location.href = 'mailto:' + EMAIL + '?subject=' + enc('Question from ' + (b || n)) + '&body=' + enc(body);
+      var btn = contact.querySelector('button[type=submit]');
+      sending(btn, true);
+      sendToRJLabs({ name: name, business: biz, phone: phone, email: email, message: msg })
+        .then(function () {
+          contact.hidden = true;
+          var s = q('contact-status');
+          s.className = 'send-status is-good';
+          s.textContent = 'Thanks. Rowan has your message and will get back to you. In a hurry? Call or text ' + PHONE + '.';
+        })
+        .catch(function () {
+          sending(btn, false);
+          var s = q('contact-status');
+          s.className = 'send-status is-bad';
+          s.textContent = 'That did not go through. Please call or text ' + PHONE + ', or email ' + EMAIL + '.';
+        });
+    });
+
+    var jump = q('lead-jump');
+    if (jump) jump.addEventListener('click', function () {
+      window.setTimeout(function () {
+        var msg = q('c-msg');
+        if (msg && !msg.value) { msg.value = 'Could you check my business listings for me? Business name: '; msg.focus(); }
+      }, 400);
     });
   }
 
@@ -386,6 +428,6 @@
   }
 
   init();
-  mailForms();
+  contactForms();
   reveal();
 })();
