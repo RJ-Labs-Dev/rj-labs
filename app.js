@@ -1,10 +1,11 @@
-/* RJ Labs presence check. Runs entirely in the browser. Nothing is sent anywhere. */
+/* RJ Labs site behavior: mobile menu, old link redirects, example animation, contact form. */
 (function () {
   'use strict';
 
   var EMAIL = 'rowan@rj-labs.com';
   var PHONE = '(928) 863-8198';
-  // Messages post to RJ Labs' own Google Form, so nothing depends on the visitor having an email app.
+
+  // Inquiries post to RJ Labs' own Google Form ("RJ Labs contact", owned by info@rj-labs.com).
   var FORM_POST = 'https://docs.google.com/forms/d/e/1FAIpQLSfpcxdRJSl2qsStFCW76eo3QYnYRosberZ2S7PVgVCC95Lozw/formResponse';
   var FIELD = {
     name: 'entry.1931311903',
@@ -14,420 +15,155 @@
     message: 'entry.1753243788'
   };
 
-  function sendToRJLabs(data) {
-    var body = new FormData();
-    body.append(FIELD.name, data.name || '');
-    body.append(FIELD.business, data.business || '');
-    body.append(FIELD.phone, data.phone || '');
-    body.append(FIELD.email, data.email || '');
-    body.append(FIELD.message, data.message || '');
-    return fetch(FORM_POST, { method: 'POST', mode: 'no-cors', body: body });
-  }
-
-  function sending(el, on) {
-    if (!el) return;
-    el.disabled = on;
-    el.dataset.label = el.dataset.label || el.textContent;
-    el.textContent = on ? 'Sending...' : el.dataset.label;
-  }
-  var STORE_KEY = 'rjlabs-check-v1';
-
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   function q(id) { return document.getElementById(id); }
-  function enc(s) { return encodeURIComponent(s); }
 
-  function googleSearch(s) { return 'https://www.google.com/search?q=' + enc(s.name + ' ' + s.town); }
-  function googleMaps(s) { return 'https://www.google.com/maps/search/?api=1&query=' + enc(s.name + ' ' + s.town); }
-  function appleMaps(s) { return 'https://maps.apple.com/?q=' + enc(s.name + ' ' + s.town); }
-
-  // kind: ok = fine, problem = costing customers, unsure = worth a second look
-  var STEPS = [
-    {
-      id: 'google',
-      title: 'Search for your business on Google',
-      lead: 'This opens a Google search for your business in a new tab.',
-      open: 'Open Google search',
-      url: googleSearch,
-      tip: 'On a computer the box is on the right side. On a phone it is near the top. When you are done looking, come back to this page.',
-      ask: 'Do you see a box with your business name, hours, and phone number?',
-      answers: [
-        { label: 'Yes, I see it', kind: 'ok' },
-        { label: 'No, I do not see it', kind: 'problem',
-          title: 'Google does not show your business properly',
-          text: 'People who search your name may not see your hours or phone number, so some may call someone else instead.' },
-        { label: 'I am not sure', kind: 'unsure',
-          title: 'You were not sure what Google shows',
-          text: 'Look for one box with your business name, stars, hours, and a Call button together.' }
-      ]
-    },
-    {
-      id: 'maps-contact',
-      title: 'Check Google Maps',
-      lead: 'This opens Google Maps with your business name and town.',
-      open: 'Open Google Maps',
-      url: googleMaps,
-      tip: 'On a phone this may open the Maps app. Come back here when you are done.',
-      ask: 'Are your address and phone number right?',
-      answers: [
-        { label: 'Yes, both are right', kind: 'ok' },
-        { label: 'No, something is wrong', kind: 'problem',
-          title: 'Google Maps has the wrong address or phone number',
-          text: 'People are being sent to the wrong place, or calling a number that does not reach you.' },
-        { label: 'My business is not on Google Maps', kind: 'problem',
-          title: 'Your business does not show up on Google Maps',
-          text: 'Someone looking for directions to you cannot find you at all.' },
-        { label: 'I am not sure', kind: 'unsure',
-          title: 'You were not sure about your address and phone number on Google Maps',
-          text: 'Search your business on Google Maps and compare the address and phone number to your real ones.' }
-      ]
-    },
-    {
-      id: 'maps-hours',
-      title: 'Check your hours',
-      lead: 'Stay on the same Google Maps page, or open it again below.',
-      open: 'Open Google Maps again',
-      url: googleMaps,
-      tip: '',
-      ask: 'Are the hours Google shows for you right?',
-      answers: [
-        { label: 'Yes, the hours are right', kind: 'ok' },
-        { label: 'No, they are wrong', kind: 'problem',
-          title: 'Google is showing the wrong hours',
-          text: 'Somebody looks you up at 6pm, sees you as closed, and may go somewhere else. Or they drive over when you are actually closed.' },
-        { label: 'There are no hours listed', kind: 'problem',
-          title: 'Google does not show your hours',
-          text: 'People cannot tell if you are open, so some will pick a place where they can tell.' },
-        { label: 'I am not sure', kind: 'unsure',
-          title: 'You were not sure about the hours Google shows',
-          text: 'Compare the hours on Google Maps to the hours on your door.' }
-      ]
-    },
-    {
-      id: 'website',
-      title: 'Tap your Website button',
-      lead: 'On the Google page that opens, find the box for your business, then tap or click the button that says Website.',
-      open: 'Open Google search',
-      url: googleSearch,
-      tip: 'This is the check most people never do.',
-      ask: 'Does it take you to your own website?',
-      answers: [
-        { label: 'Yes, it is my website', kind: 'ok' },
-        { label: 'No, it goes somewhere else', kind: 'problem',
-          title: 'Your Website button sends people somewhere that is not yours',
-          text: 'Customers who tap it land on a page that has nothing to do with you. This one is worth fixing soon. It can happen when an old web address runs out and someone else buys it.' },
-        { label: 'There is no Website button', kind: 'unsure',
-          title: 'Your Google listing has no Website button',
-          text: 'If you have a website, customers cannot get to it from Google. If you do not have one, this is fine.' },
-        { label: 'I am not sure', kind: 'unsure',
-          title: 'You were not sure where your Website button goes',
-          text: 'Tap Website on your Google listing and see whose page opens.' }
-      ]
-    },
-    {
-      id: 'apple',
-      title: 'Check Apple Maps',
-      lead: 'Apple Maps is completely separate from Google. iPhones come with it, and fixing your Google listing does not fix Apple Maps.',
-      open: 'Open Apple Maps',
-      url: appleMaps,
-      tip: 'Easiest way: open the Maps app on an iPhone and search your business name.',
-      ask: 'Is your business there, with the right address, phone number, and hours?',
-      answers: [
-        { label: 'Yes, everything is right', kind: 'ok' },
-        { label: 'No, something is wrong or missing', kind: 'problem',
-          title: 'Apple Maps is missing you or has something wrong',
-          text: 'People with iPhones who look you up get the wrong information, or do not find you at all.' },
-        { label: 'I cannot check right now', kind: 'unsure',
-          title: 'You could not check Apple Maps',
-          text: 'Open the Maps app on any iPhone and search your business name. It takes a minute.' }
-      ]
-    },
-    {
-      id: 'reviews',
-      title: 'Look at your reviews',
-      lead: 'Look at the reviews on your Google listing.',
-      open: 'Open Google search again',
-      url: googleSearch,
-      tip: '',
-      ask: 'When somebody leaves you a review, does anyone reply?',
-      answers: [
-        { label: 'Yes, we reply', kind: 'ok' },
-        { label: 'No, not usually', kind: 'problem',
-          title: 'Reviews are going unanswered',
-          text: 'People reading your reviews see nobody replying. A short thank you, or a calm answer to a complaint, shows them someone is paying attention.' },
-        { label: 'We do not have reviews yet', kind: 'unsure',
-          title: 'You do not have reviews yet',
-          text: 'Asking a few happy regulars to leave a review is the easiest place to start.' },
-        { label: 'I am not sure', kind: 'unsure',
-          title: 'You were not sure whether anyone replies to reviews',
-          text: 'Open a few reviews on your Google listing and look for a reply from the owner under each one.' }
-      ]
-    }
-  ];
-
-  var state = { screen: 'start', name: '', town: '', step: 0, answers: [] };
-
-  function save() { try { sessionStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable, keep going */ } }
-  function load() {
-    try {
-      var raw = sessionStorage.getItem(STORE_KEY);
-      if (raw) {
-        var s = JSON.parse(raw);
-        if (s && typeof s === 'object' && Array.isArray(s.answers)) { state = s; }
-      }
-    } catch (e) { /* ignore */ }
-  }
-
-  var panels = { start: q('tool-start'), question: q('tool-question'), result: q('tool-result') };
-
-  function show(screen, focus) {
-    state.screen = screen;
-    Object.keys(panels).forEach(function (k) { panels[k].hidden = (k !== screen); });
-    save();
-    if (screen === 'start') renderStart();
-    if (screen === 'question') renderQuestion();
-    if (screen === 'result') renderResult();
-    if (focus) {
-      var h = panels[screen].querySelector('.q-title');
-      if (h) {
-        h.focus({ preventScroll: true });
-        var top = q('tool').getBoundingClientRect().top + window.pageYOffset - 90;
-        if (Math.abs(window.pageYOffset - top) > 40 && q('tool').getBoundingClientRect().top < 60) {
-          window.scrollTo({ top: top, behavior: 'smooth' });
-        }
-      }
+  /* Old section links from the previous site still land somewhere sensible. */
+  var ALIASES = { '#work': '#about', '#why': '#automate', '#owner': '#about' };
+  function followAlias() {
+    var target = ALIASES[window.location.hash];
+    if (target && document.querySelector(target)) {
+      history.replaceState(null, '', target);
+      document.querySelector(target).scrollIntoView();
     }
   }
+  followAlias();
+  window.addEventListener('hashchange', followAlias);
 
-  function renderStart() {
-    q('biz-name').value = state.name || '';
-    q('biz-town').value = state.town || '';
+  /* Mobile menu */
+  var toggle = q('menu-toggle'), nav = q('site-nav');
+  function setMenu(open) {
+    if (!toggle || !nav) return;
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    nav.classList.toggle('is-open', open);
   }
-
-  function renderQuestion() {
-    var s = STEPS[state.step];
-    q('progress-bar').style.width = Math.round(((state.step) / STEPS.length) * 100) + '%';
-    q('step-label').textContent = 'Step ' + (state.step + 1) + ' of ' + STEPS.length;
-    q('q-title').textContent = s.title;
-    q('q-lead').textContent = s.lead;
-    var open = q('q-open');
-    open.textContent = s.open + ' (new tab)';
-    open.href = s.url(state);
-    q('q-tip').textContent = s.tip;
-    q('q-ask').textContent = s.ask;
-    var box = q('answers');
-    box.innerHTML = '';
-    s.answers.forEach(function (a, i) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'answer';
-      b.textContent = a.label;
-      b.setAttribute('aria-pressed', state.answers[state.step] === i ? 'true' : 'false');
-      b.addEventListener('click', function () { choose(i); });
-      box.appendChild(b);
+  if (toggle && nav) {
+    toggle.addEventListener('click', function () { setMenu(toggle.getAttribute('aria-expanded') !== 'true'); });
+    nav.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') { setMenu(false); toggle.focus(); }
     });
-    q('btn-back').textContent = state.step === 0 ? 'Back to business name' : 'Back';
+    window.addEventListener('resize', function () { if (window.innerWidth > 860) setMenu(false); });
   }
 
-  function choose(i) {
-    state.answers[state.step] = i;
-    if (state.step < STEPS.length - 1) {
-      state.step += 1;
-      show('question', true);
-    } else {
-      show('result', true);
+  /* Example workflow: highlight steps in order. Decorative only, off for reduced motion. */
+  (function flow() {
+    var steps = document.querySelectorAll('.flow-step');
+    if (!steps.length || reduceMotion) return;
+    var i = 0, timer = null;
+    function tick() {
+      steps.forEach(function (s, n) { s.classList.toggle('is-active', n === i); });
+      i = (i + 1) % steps.length;
     }
-  }
+    function start() { if (!timer) { tick(); timer = setInterval(tick, 2200); } }
+    function stop() { clearInterval(timer); timer = null; }
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (en) { en[0].isIntersecting ? start() : stop(); }).observe(steps[0].closest('.flow'));
+    } else { start(); }
+    document.addEventListener('visibilitychange', function () { if (document.hidden) stop(); });
+  })();
 
-  function collect() {
-    var problems = [], unsure = [];
-    STEPS.forEach(function (s, idx) {
-      var ai = state.answers[idx];
-      if (ai === undefined || ai === null) return;
-      var a = s.answers[ai];
-      if (!a) return;
-      if (a.kind === 'problem') problems.push(a);
-      if (a.kind === 'unsure') unsure.push(a);
-    });
-    return { problems: problems, unsure: unsure };
-  }
-
-  var WORDS = ['No', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'];
-
-  function listItems(ul, items) {
-    ul.innerHTML = '';
-    items.forEach(function (a) {
-      var li = document.createElement('li');
-      var st = document.createElement('strong');
-      st.textContent = a.title;
-      var sp = document.createElement('span');
-      sp.textContent = a.text;
-      li.appendChild(st); li.appendChild(sp);
-      ul.appendChild(li);
-    });
-  }
-
-  function emailParts(found) {
-    var subject = 'Free check results for ' + state.name;
-    var lines = [
-      'Hi Rowan,', '',
-      'I ran the free check on rj-labs.com for my business.', '',
-      'Business: ' + state.name,
-      'Town: ' + state.town, ''
-    ];
-    if (found.problems.length) {
-      lines.push('What looked wrong:');
-      found.problems.forEach(function (a) { lines.push('- ' + a.title); });
-      lines.push('');
-    }
-    if (found.unsure.length) {
-      lines.push('What I was not sure about:');
-      found.unsure.forEach(function (a) { lines.push('- ' + a.title); });
-      lines.push('');
-    }
-    lines.push('Can you take a look?', '', 'My name:', 'Best phone number (optional):');
-    return { subject: subject, body: lines.join('\r\n') };
-  }
-
-  function renderResult() {
-    var found = collect();
-    var n = found.problems.length, u = found.unsure.length;
-    var title = q('result-title');
-    title.classList.remove('is-clean');
-    var rf = q('result-form'), rs = q('result-status');
-    if (rf) rf.hidden = false;
-    if (rs) { rs.textContent = ''; rs.className = 'send-status'; }
-
-    if (n > 0) {
-      title.textContent = 'You found ' + (WORDS[n] || n).toLowerCase() + (n === 1 ? ' thing' : ' things') + ' worth fixing.';
-      q('result-lead').textContent = 'Here is what each one can mean for customers looking up ' + state.name + '.';
-    } else if (u > 0) {
-      title.textContent = 'Nothing you checked looks wrong.';
-      q('result-lead').textContent = 'There ' + (u === 1 ? 'is one thing' : 'are a few things') + ' you were not sure about. You can check ' + (u === 1 ? 'it' : 'them') + ' yourself using the tips below.';
-    } else {
-      title.textContent = 'Everything looks good.';
-      title.classList.add('is-clean');
-      q('result-lead').textContent = 'From what you saw, Google and Apple Maps are showing people the right information about ' + state.name + '.';
-    }
-
-    listItems(q('findings'), found.problems);
-    q('findings').hidden = n === 0;
-    listItems(q('unsure'), found.unsure);
-    q('unsure-wrap').hidden = u === 0;
-
-    var cta = q('result-cta');
-    cta.hidden = (n === 0 && u === 0);
-    q('result-clean').hidden = !(n === 0 && u === 0);
-    if (!cta.hidden) {
-      cta.querySelector('.result-cta-title').textContent = n > 0
-        ? 'Want us to fix these for you? Free to look.'
-        : 'Want us to look at these for you instead? Free, no obligation.';
-    }
-    q('progress-bar').style.width = '100%';
-  }
-
-  function init() {
-    if (!panels.start) return;
-    load();
-
-    q('tool-start').addEventListener('submit', function (e) {
-      e.preventDefault();
-      var name = q('biz-name').value.trim(), town = q('biz-town').value.trim();
-      if (!name || !town) {
-        q('start-error').hidden = false;
-        (name ? q('biz-town') : q('biz-name')).focus();
-        return;
-      }
-      q('start-error').hidden = true;
-      if (name !== state.name || town !== state.town) { state.answers = []; }
-      state.name = name; state.town = town; state.step = 0;
-      show('question', true);
-    });
-
-    q('btn-back').addEventListener('click', function () {
-      if (state.step === 0) { show('start', true); }
-      else { state.step -= 1; show('question', true); }
-    });
-    q('btn-result-back').addEventListener('click', function () { state.step = STEPS.length - 1; show('question', true); });
-    q('btn-restart').addEventListener('click', function () {
-      state = { screen: 'start', name: '', town: '', step: 0, answers: [] };
-      show('start', true);
-    });
-    var rForm = q('result-form');
-    if (rForm) rForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (q('r-hp').value) return;
-      var name = q('r-name').value.trim(), phone = q('r-phone').value.trim(), email = q('r-email').value.trim();
-      if (!name || !phone) { q('result-error').hidden = false; (name ? q('r-phone') : q('r-name')).focus(); return; }
-      q('result-error').hidden = true;
-      var btn = rForm.querySelector('button[type=submit]');
-      sending(btn, true);
-      var p = emailParts(collect());
-      sendToRJLabs({ name: name, business: state.name, phone: phone, email: email, message: p.body })
-        .then(function () {
-          rForm.hidden = true;
-          q('result-status').className = 'send-status is-good';
-          q('result-status').textContent = 'Sent. Rowan has what you found and will get back to you. If you want it sorted today, call or text ' + PHONE + '.';
-        })
-        .catch(function () {
-          sending(btn, false);
-          q('result-status').className = 'send-status is-bad';
-          q('result-status').textContent = 'That did not go through. Please call or text ' + PHONE + ', or email ' + EMAIL + '.';
-        });
-    });
-
-    var screen = (state.screen === 'question' || state.screen === 'result') && state.name ? state.screen : 'start';
-    if (state.step < 0 || state.step >= STEPS.length) state.step = 0;
-    show(screen, false);
-  }
-
-  function contactForms() {
-    var contact = q('contact-form');
-    if (contact) contact.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (q('c-hp').value) return;
-      var name = q('c-name').value.trim(), biz = q('c-biz').value.trim(),
-          phone = q('c-phone').value.trim(), email = q('c-email').value.trim(), msg = q('c-msg').value.trim();
-      if (!name || !phone || !msg) {
-        q('contact-error').hidden = false;
-        (!name ? q('c-name') : (!phone ? q('c-phone') : q('c-msg'))).focus();
-        return;
-      }
-      q('contact-error').hidden = true;
-      var btn = contact.querySelector('button[type=submit]');
-      sending(btn, true);
-      sendToRJLabs({ name: name, business: biz, phone: phone, email: email, message: msg })
-        .then(function () {
-          contact.hidden = true;
-          var s = q('contact-status');
-          s.className = 'send-status is-good';
-          s.textContent = 'Thanks. Rowan has your message and will get back to you. In a hurry? Call or text ' + PHONE + '.';
-        })
-        .catch(function () {
-          sending(btn, false);
-          var s = q('contact-status');
-          s.className = 'send-status is-bad';
-          s.textContent = 'That did not go through. Please call or text ' + PHONE + ', or email ' + EMAIL + '.';
-        });
-    });
-
-    var jump = q('lead-jump');
-    if (jump) jump.addEventListener('click', function () {
-      window.setTimeout(function () {
-        var msg = q('c-msg');
-        if (msg && !msg.value) { msg.value = 'Could you check my business listings for me? Business name: '; msg.focus(); }
-      }, 400);
-    });
-  }
-
-  function reveal() {
+  /* Reveal on scroll */
+  (function reveal() {
     var els = document.querySelectorAll('.reveal');
-    if (!('IntersectionObserver' in window)) { els.forEach(function (el) { el.classList.add('is-in'); }); return; }
+    if (reduceMotion || !('IntersectionObserver' in window)) { els.forEach(function (el) { el.classList.add('is-in'); }); return; }
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); } });
-    }, { rootMargin: '0px 0px -8% 0px' });
+    }, { rootMargin: '0px 0px -6% 0px' });
     els.forEach(function (el) { io.observe(el); });
+  })();
+
+  var year = q('year');
+  if (year) year.textContent = String(new Date().getFullYear());
+
+  /* Contact form */
+  var form = q('contact-form');
+  if (!form) return;
+  var loadedAt = Date.now();
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function setError(input, errId, show) {
+    var err = q(errId);
+    if (err) err.hidden = !show;
+    if (show) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
   }
 
-  init();
-  contactForms();
-  reveal();
+  function clean(v, max) { return String(v || '').replace(/\u0000/g, '').trim().slice(0, max); }
+
+  ['c-name', 'c-email', 'c-msg'].forEach(function (id) {
+    var el = q(id);
+    el.addEventListener('input', function () { if (el.getAttribute('aria-invalid')) setError(el, id + '-err', false); });
+  });
+
+  function send(data) {
+    var body = new FormData();
+    body.append(FIELD.name, data.name);
+    body.append(FIELD.business, data.business);
+    body.append(FIELD.phone, data.phone);
+    body.append(FIELD.email, data.email);
+    body.append(FIELD.message, data.message);
+    var controller = 'AbortController' in window ? new AbortController() : null;
+    var t = controller ? setTimeout(function () { controller.abort(); }, 15000) : null;
+    // Google Forms does not allow reading the response from another site (no-cors).
+    // A network failure or timeout still rejects, and is shown to the visitor as an error.
+    return fetch(FORM_POST, { method: 'POST', mode: 'no-cors', body: body, signal: controller ? controller.signal : undefined })
+      .finally(function () { if (t) clearTimeout(t); });
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var name = q('c-name'), email = q('c-email'), msg = q('c-msg');
+    var nameV = clean(name.value, 100), emailV = clean(email.value, 200), msgV = clean(msg.value, 4000);
+    var bad = [];
+    setError(name, 'c-name-err', !nameV); if (!nameV) bad.push(name);
+    var emailOk = EMAIL_RE.test(emailV);
+    setError(email, 'c-email-err', !emailOk); if (!emailOk) bad.push(email);
+    setError(msg, 'c-msg-err', msgV.length < 3); if (msgV.length < 3) bad.push(msg);
+    if (bad.length) { bad[0].focus(); return; }
+
+    // Spam checks: hidden field filled, or submitted faster than a person could type.
+    if (q('c-hp').value || Date.now() - loadedAt < 2500) {
+      showSent();
+      return;
+    }
+
+    var biz = clean(q('c-biz').value, 150), site = clean(q('c-site').value, 200), phone = clean(q('c-phone').value, 40);
+    var message = msgV + (site ? '\n\nWebsite: ' + site : '') + '\n\n(Sent from the rj-labs.com automation inquiry form)';
+
+    var btn = form.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.dataset.label = btn.dataset.label || btn.textContent;
+    btn.textContent = 'Sending...';
+    var status = q('contact-status');
+    status.className = 'send-status';
+    status.textContent = '';
+
+    send({ name: nameV, business: biz, phone: phone, email: emailV, message: message })
+      .then(showSent)
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = btn.dataset.label;
+        status.className = 'send-status is-bad';
+        status.innerHTML = '';
+        var p = document.createElement('p');
+        p.textContent = 'That did not go through. Please try again, or email ' + EMAIL + ' or call or text ' + PHONE + '.';
+        status.appendChild(p);
+        status.focus();
+      });
+  });
+
+  function showSent() {
+    var status = q('contact-status');
+    form.hidden = true;
+    status.className = 'send-status is-good';
+    status.innerHTML = '';
+    var s = document.createElement('strong');
+    s.textContent = 'Thanks, your message was sent.';
+    var p = document.createElement('p');
+    p.textContent = 'This is not a booked appointment. Rowan will reply by email to talk through your workflow and find a time if a call makes sense.';
+    var p2 = document.createElement('p');
+    p2.textContent = 'Need to add something? Email ' + EMAIL + '.';
+    status.appendChild(s); status.appendChild(p); status.appendChild(p2);
+    status.focus();
+  }
 })();
